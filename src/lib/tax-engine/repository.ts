@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { TaxRuleVersion } from "./types";
 export async function carregarRegras(sb: SupabaseClient, dataOperacao: string): Promise<TaxRuleVersion[]> {
   const { data, error } = await sb
     .from("tax_rule_versions")
@@ -52,4 +54,22 @@ export async function carregarRegras(sb: SupabaseClient, dataOperacao: string): 
     throw new Error(`Carga de regras inválida: ${semTributo.length} versão(ões) sem tax_id.`);
 
   return regras;
+  /** Congela as versões usadas para que a análise seja reproduzível no futuro. */
+export async function congelarRuleSet(sb: SupabaseClient, regras: TaxRuleVersion[], engineVersion: string) {
+  const { data: rs, error } = await sb
+    .from("rule_sets")
+    .insert({ rotulo: `auto ${new Date().toISOString().slice(0, 10)}`, engine_version: engineVersion })
+    .select("id")
+    .single();
+  if (error) throw error;
+
+  if (regras.length) {
+    const { error: e2 } = await sb
+      .from("rule_set_items")
+      .insert(regras.map((r) => ({ rule_set_id: rs.id, tax_rule_version_id: r.id })));
+    if (e2) throw e2;
+  }
+
+  return rs.id as string;
 }
+
