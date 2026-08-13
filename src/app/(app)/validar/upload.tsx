@@ -8,6 +8,7 @@ type Resultado = {
   analysisId?: string;
   resultado?: string;
   confianca?: string;
+  aviso?: string;
   erro?: { code: string; message: string };
 };
 
@@ -16,6 +17,8 @@ const SELO: Record<string, string> = {
   APROVADO_COM_RESSALVAS: "aten",
   NECESSITA_REVISAO: "aten",
   DIVERGENCIA: "erro",
+  AGUARDANDO_XML: "neutro",
+  PDF_ANEXADO: "neutro",
 };
 
 export default function Upload({ empresas }: { empresas: Empresa[] }) {
@@ -68,9 +71,9 @@ export default function Upload({ empresas }: { empresas: Empresa[] }) {
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && input.current?.click()}
       >
-        <b>{enviando ? "Processando…" : "Arraste os XML aqui"}</b>
-        <span>ou clique para escolher. NF-e modelo 55, até 10 arquivos por envio, 5 MB cada.</span>
-        <input ref={input} type="file" accept=".xml" multiple hidden onChange={(e) => enviar(e.target.files)} />
+        <b>{enviando ? "Processando…" : "Arraste os arquivos aqui"}</b>
+        <span>ou clique para escolher. XML da NF-e (laudo completo) ou DANFE em PDF (identificação apenas). Até 10 arquivos.</span>
+        <input ref={input} type="file" accept=".xml,.pdf" multiple hidden onChange={(e) => enviar(e.target.files)} />
       </div>
 
       {resultados.length > 0 && (
@@ -92,7 +95,9 @@ export default function Upload({ empresas }: { empresas: Empresa[] }) {
                   <td>
                     {r.analysisId
                       ? <Link className="btn fant" href={`/analises/${r.analysisId}`}>Abrir laudo</Link>
-                      : <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>{r.erro?.message}</span>}
+                      : <span style={{ fontSize: 12.5, color: r.erro ? "var(--carimbo)" : "var(--ink-2)" }}>
+                          {r.erro?.message ?? r.aviso}
+                        </span>}
                   </td>
                 </tr>
               ))}
