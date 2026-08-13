@@ -28,7 +28,7 @@ async function pdfParaImagens(file: File, maxPaginas = 2, escala = 3): Promise<H
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     const ctx = canvas.getContext("2d")!;
-    await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+   await page.render({ canvasContext: ctx, viewport }).promise;
     canvases.push(canvas);
   }
   return canvases;
