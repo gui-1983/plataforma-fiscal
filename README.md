@@ -24,7 +24,7 @@ Crie o projeto em supabase.com (região São Paulo). Depois:
 ```bash
 npm i -g supabase
 supabase link --project-ref SEU_REF
-supabase db push          # aplica 0001_init.sql e 0002_seed.sql
+supabase db push          # aplica as migrations 0001 a 0004
 ```
 
 No painel do Supabase:
@@ -53,7 +53,7 @@ Importe o repositório. Em Settings → Environment Variables, copie de `.env.ex
 | `SUPABASE_SERVICE_ROLE_KEY` | idem — **nunca** com prefixo `NEXT_PUBLIC_` |
 | `CRON_SECRET` | string aleatória sua |
 
-O `vercel.json` já registra os dois cron jobs (worker de lote e crawler legislativo). Cron exige plano Pro.
+Não existe `vercel.json` neste repositório, e é proposital: cron mais frequente que uma vez por dia falha no plano Hobby. O worker de lote entra quando houver processamento em lote, via plano Pro ou `pg_cron` no Supabase.
 
 ### 1.4 Primeira empresa e primeiro usuário
 
@@ -87,19 +87,19 @@ Os testes em `src/tests/engine.test.ts` são golden files: cobrem vigência, esp
 - Schema completo com RLS, imutabilidade de regra aprovada, aprovação por segundo par de olhos e restrição de vigência sobreposta (`EXCLUDE USING gist`).
 - Motor tributário puro, tipado, com resolução por especificidade, hierarquia normativa e estado explícito para "não sei".
 - Parser de NF-e 4.00 com grupo IBS/CBS, resistente a XXE.
-- Rota `POST /api/documents/upload`: valida, deduplica por hash, persiste, congela o rule set, analisa e grava divergências.
-- Suíte de testes do motor.
+- Autenticação com Supabase Auth, middleware de sessão e proteção de rotas.
+- Telas: login, validar notas, documentos, laudo com trilha da regra, regras cadastradas, linha do tempo e auditoria.
+- Exclusão lógica de documento com motivo obrigatório, restrita a administrador, restaurável e registrada em `audit_logs`.
+- Suíte de testes do motor (`npm test`).
 
 ## 3. O que falta, em ordem
 
-1. **Ingestor das tabelas oficiais** (`scripts/ingest-tabelas.ts`) — Informe Técnico RT 2025.002: cClassTrib, CST-IBS/CBS, cCredPres. Enquanto isso não existir, `V007` não valida nada de verdade. **É o próximo passo mais importante do projeto.**
-2. Telas: portar a interface do protótipo para `src/app/(app)`.
+1. **Ingestor das tabelas oficiais** (`scripts/ingest-tabelas.ts`) — Informe Técnico RT 2025.002: cClassTrib, CST-IBS/CBS, cCredPres. Enquanto isso não existir, o validador `V007` não valida nada de verdade e o motor conhece uma única combinação. **É o próximo passo mais importante.**
+2. Painel com gráficos e índice de conformidade.
 3. Worker de lote: `/api/jobs/worker` lendo `processing_tasks` com reserva por `reservado_ate`.
 4. Exportação PDF e Excel.
-5. Administração de regras com fluxo de aprovação.
+5. Administração de regras com fluxo de aprovação pela interface.
 6. Crawler legislativo.
-
----
 
 ## 4. Limites desta stack que você precisa conhecer agora
 

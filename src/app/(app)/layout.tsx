@@ -9,6 +9,7 @@ const MENU = [
   ["/documentos", "Documentos"],
   ["/regras", "Regras cadastradas"],
   ["/linha-do-tempo", "Linha do tempo"],
+  ["/auditoria", "Auditoria"],
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
