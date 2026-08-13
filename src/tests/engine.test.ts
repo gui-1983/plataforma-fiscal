@@ -139,3 +139,17 @@ describe("agregação", () => {
       .toEqual(JSON.stringify(analisar(n, [CBS_2026, IBS_2026])));
   });
 });
+
+describe("chave de acesso", () => {
+  it("aceita chave com DV correto e rejeita dígito trocado", async () => {
+    const { chaveValida, extrairChave, dadosDaChave } = await import("@/lib/nfe/chave");
+    const chave = "31260738164393000164550010011001471682094377";
+    expect(chaveValida(chave)).toBe(true);
+
+    const trocado = chave.slice(0, 10) + (Number(chave[10]) === 9 ? "8" : "9") + chave.slice(11);
+    expect(chaveValida(trocado)).toBe(false);
+
+    expect(extrairChave(`Chave de acesso ${chave} DANFE`).chave).toBe(chave);
+    expect(dadosDaChave(chave).modelo).toBe("55");
+  });
+});
