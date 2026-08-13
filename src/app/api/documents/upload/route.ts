@@ -42,7 +42,15 @@ export async function POST(req: Request) {
 
       // Idempotência: mesmo arquivo, mesma empresa, não duplica.
       const { data: existente } = await sb.from("documents")
-        .select("id").eq("company_id", companyId).eq("hash_arquivo", hash).maybeSingle();
+        .select("id, deleted_at").eq("company_id", companyId).eq("hash_arquivo", hash).maybeSingle();
+
+      // Documento excluído e reenviado volta a ficar visível, em vez de ser
+      // rejeitado pela restrição de hash único.
+      if (existente?.deleted_at) {
+        await sb.from("documents")
+          .update({ deleted_at: null, deleted_by: null, motivo_exclusao: null })
+          .eq("id", existente.id);
+      }
 
       let documentId = existente?.id as string | undefined;
       const storagePath = `${companyId}/${hash}.xml`;
