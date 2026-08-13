@@ -3,7 +3,7 @@ import type {
   ResultadoAnalise, Scored, TaxId, TaxRuleVersion,
 } from "./types";
 import { ENGINE_VERSION } from "./types";
-import { validadores } from "./validators";
+import { validadores, type TabelaAdmissibilidade } from "./validators";
 
 /* ============================================================================
    MOTOR TRIBUTÁRIO — função pura.
@@ -172,7 +172,7 @@ export interface NotaInput {
 
 export function analisar(
   nota: NotaInput, regras: TaxRuleVersion[],
-  opts: { tributos?: TaxId[]; tolerancia?: number } = {},
+  opts: { tributos?: TaxId[]; tolerancia?: number; tabela?: TabelaAdmissibilidade } = {},
 ): ResultadoAnalise {
   const tributos = opts.tributos ?? (["IBS", "CBS"] as TaxId[]);
   const tolerancia = opts.tolerancia ?? 0.01;
@@ -193,9 +193,15 @@ export function analisar(
     };
     return {
       nItem: item.nItem,
+      descricao: item.descricao,
+      valorProduto: item.valorProduto,
+      desconto: item.desconto,
+      frete: item.frete,
+      seguro: item.seguro,
+      outras: item.outras,
       ctx,
       tributos: tributos.map((t) => calcularTributo(t, item, ctx, regras, tolerancia)),
-      achados: validadores(nota, item, ctx),
+      achados: validadores(nota, item, ctx, opts.tabela),
     };
   });
 

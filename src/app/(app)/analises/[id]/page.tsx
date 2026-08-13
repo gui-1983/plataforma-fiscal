@@ -60,8 +60,12 @@ export default async function Laudo({ params }: { params: Promise<{ id: string }
 
       {(trace?.itens ?? []).map((linha: any, idx: number) => (
         <div className="cartao" key={idx} style={{ marginBottom: 14 }}>
-          <div style={{ padding: "13px 16px", borderBottom: "1px solid var(--fio)" }}>
+          <div style={{ padding: "13px 16px", borderBottom: "1px solid var(--fio)", display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+            <div>
             <div className="eyebrow">Item {linha.nItem}</div>
+            {linha.descricao && (
+              <b style={{ fontFamily: "Archivo", fontSize: 15, display: "block", marginTop: 2 }}>{linha.descricao}</b>
+            )}
             <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
               <span className="pill">NCM {linha.ctx.ncm ?? "—"}</span>
               <span className="pill">CFOP {linha.ctx.cfop ?? "—"}</span>
@@ -69,6 +73,21 @@ export default async function Laudo({ params }: { params: Promise<{ id: string }
               <span className="pill">cClassTrib {linha.ctx.cClassTrib ?? "—"}</span>
               <span className="pill">{linha.ctx.ufOrigem} → {linha.ctx.ufDestino}</span>
             </div>
+            </div>
+            {linha.valorProduto != null && (
+              <div style={{ textAlign: "right" }}>
+                <div className="eyebrow">Valor do item</div>
+                <div className="mono" style={{ fontSize: 17, fontWeight: 700 }}>{brl(linha.valorProduto)}</div>
+                {(linha.desconto > 0 || linha.frete > 0 || linha.seguro > 0 || linha.outras > 0) && (
+                  <div style={{ fontSize: 11, color: "var(--ink-2)", marginTop: 3 }}>
+                    {linha.desconto > 0 && <>desc. {brl(linha.desconto)} </>}
+                    {linha.frete > 0 && <>frete {brl(linha.frete)} </>}
+                    {linha.seguro > 0 && <>seguro {brl(linha.seguro)} </>}
+                    {linha.outras > 0 && <>outras {brl(linha.outras)}</>}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <table className="dados">

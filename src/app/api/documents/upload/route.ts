@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { supabaseServer } from "@/lib/supabase/server";
 import { parseNFe, ErroParse } from "@/lib/nfe/parser";
-import { carregarRegras, congelarRuleSet } from "@/lib/tax-engine/repository";
+import { carregarRegras, congelarRuleSet, carregarAdmissibilidade } from "@/lib/tax-engine/repository";
 import { analisar } from "@/lib/tax-engine/engine";
 import { ENGINE_VERSION } from "@/lib/tax-engine/types";
 
@@ -84,8 +84,9 @@ export async function POST(req: Request) {
 
       // Regras vigentes NA DATA DA OPERAÇÃO, não na data de hoje.
       const regras = await carregarRegras(sb, nota.dataOperacao);
+      const tabela = await carregarAdmissibilidade(sb);
       const ruleSetId = await congelarRuleSet(sb, regras, ENGINE_VERSION);
-      const analise = analisar(nota, regras);
+      const analise = analisar(nota, regras, { tabela });
 
       const { data: saved, error: e3 } = await sb.from("analyses").insert({
         company_id: companyId, document_id: documentId,

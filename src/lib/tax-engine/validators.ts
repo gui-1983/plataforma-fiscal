@@ -25,7 +25,7 @@ export function validadores(
   nota: NotaInput,
   item: ItemInput,
   ctx: OperationContext,
-  tabela: TabelaAdmissibilidade = TABELA_VAZIA,
+  tabela: TabelaAdmissibilidade | undefined = TABELA_VAZIA,
 ): Achado[] {
   const a: Achado[] = [];
   const semGrupo = item.cst == null && item.cClassTrib == null && item.baseInformada == null;
@@ -48,15 +48,16 @@ export function validadores(
         fundamento: "Sem o cClassTrib não é possível determinar o tratamento tributário do item (IT RT 2025.002)." });
 
     if (item.cst && item.cClassTrib) {
-      const permitidos = tabela.porCst[item.cst];
+      const tab = tabela ?? TABELA_VAZIA;
+      const permitidos = tab.porCst[item.cst];
       if (permitidos && !permitidos.includes(item.cClassTrib))
         a.push({ codigo: "V007", gravidade: "alta", campo: "cClassTrib",
           texto: `cClassTrib ${item.cClassTrib} não é admissível para o CST ${item.cst}.`,
-          fundamento: tabela.fonte });
+          fundamento: tab.fonte });
       else if (!permitidos)
         a.push({ codigo: "V007b", gravidade: "info", campo: "cClassTrib",
           texto: `Admissibilidade do CST ${item.cst} não conferida.`,
-          fundamento: tabela.fonte });
+          fundamento: tab.fonte });
     }
   }
 

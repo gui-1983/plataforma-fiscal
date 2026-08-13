@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { TaxRuleVersion } from "./types";
+import type { TabelaAdmissibilidade } from "./validators";
 
 /**
  * Carrega as regras cadastradas. A vigência é filtrada DENTRO do motor,
@@ -84,4 +85,26 @@ export async function congelarRuleSet(
   }
 
   return rs.id as string;
+}
+
+/**
+ * Monta a tabela CST x cClassTrib a partir da carga oficial ingerida.
+ * Se nada foi ingerido, devolve tabela vazia e marcada como incompleta —
+ * o validador V007 então avisa "não conferida" em vez de reprovar à toa.
+ */
+export async function carregarAdmissibilidade(sb: SupabaseClient): Promise<TabelaAdmissibilidade> {
+  const { data, error } = await sb
+    .from("ref_cclasstrib")
+    .select("cst, cclasstrib, fonte_versao");
+
+  if (error || !data || data.length === 0)
+    return { porCst: {}, completa: false, fonte: "Informe Técnico RT 2025.002 — tabela ainda não ingerida" };
+
+  const porCst: Record<string, string[]> = {};
+  for (const r of data as { cst: string; cclasstrib: string }[]) {
+    (porCst[r.cst] ??= []).push(r.cclasstrib);
+  }
+
+  const versao = (data[0] as { fonte_versao: string }).fonte_versao;
+  return { porCst, completa: true, fonte: versao };
 }

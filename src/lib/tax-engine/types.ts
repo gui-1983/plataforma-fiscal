@@ -110,5 +110,16 @@ export interface ResultadoAnalise {
   resultado: "APROVADO" | "APROVADO_COM_RESSALVAS" | "DIVERGENCIA" | "NECESSITA_REVISAO";
   confianca: "alta" | "media" | "baixa";
   impacto: number;
-  itens: Array<{ nItem: number; ctx: OperationContext; tributos: LinhaCalculo[]; achados: Achado[] }>;
+  itens: Array<{
+    nItem: number;
+    descricao: string | null;
+    valorProduto: number;
+    desconto: number;
+    frete: number;
+    seguro: number;
+    outras: number;
+    ctx: OperationContext;
+    tributos: LinhaCalculo[];
+    achados: Achado[];
+  }>;
 }
